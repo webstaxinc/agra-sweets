@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { 
   BarChart, 
   LineChart, 
+  PieChart,
+  Pie,
+  Cell,
   Bar, 
   Line, 
   XAxis, 
@@ -20,7 +23,8 @@ import {
   Activity, 
   Calendar, 
   Package, 
-  Banknote
+  Banknote,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { getAllOrders, getCurrentUser } from '@/lib/storage';
@@ -41,6 +45,9 @@ import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, addDays, su
 
 type TimeRange = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
+// Define a set of colors for the pie chart
+const COLORS = ['#8B5CF6', '#D946EF', '#F97316', '#0EA5E9', '#10B981', '#FBBF24', '#EC4899', '#6366F1'];
+
 const AdminAnalytics = () => {
   const navigate = useNavigate();
   const user = getCurrentUser();
@@ -54,6 +61,7 @@ const AdminAnalytics = () => {
   const [averageOrderValue, setAverageOrderValue] = useState(0);
   const [chartData, setChartData] = useState<any[]>([]);
   const [topSellingItems, setTopSellingItems] = useState<{name: string, quantity: number, revenue: number}[]>([]);
+  const [pieChartData, setPieChartData] = useState<{name: string, value: number}[]>([]);
   
   useEffect(() => {
     if (!user) {
@@ -98,6 +106,17 @@ const AdminAnalytics = () => {
       .slice(0, 5);
     
     setTopSellingItems(topItems);
+    
+    // Create pie chart data for item-wise sales by quantity
+    const pieData = Array.from(itemMap.entries())
+      .map(([name, stats]) => ({
+        name,
+        value: stats.quantity
+      }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 8); // Limit to 8 items for better visualization
+    
+    setPieChartData(pieData);
     
     // Generate chart data based on time range
     generateChartData(timeRange, orders);
@@ -201,6 +220,36 @@ const AdminAnalytics = () => {
   
   const formatCurrency = (value: number) => {
     return `₹${value.toFixed(2)}`;
+  };
+
+  // Custom render function for pie chart labels
+  const renderCustomizedLabel = ({ 
+    cx, 
+    cy, 
+    midAngle, 
+    innerRadius, 
+    outerRadius, 
+    percent, 
+    index 
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius * 1.1;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    // Only show percentage for segments with at least 5% share
+    return percent >= 0.05 ? (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#888"
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={12}
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    ) : null;
   };
   
   return (
@@ -351,6 +400,57 @@ const AdminAnalytics = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in">
+          {/* Pie Chart for Item-wise Sales */}
+          <div className="bg-white rounded-lg border border-border overflow-hidden">
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">Top Selling Items</h3>
+                <PieChartIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+            
+            <div className="p-4 h-80">
+              {pieChartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={true}
+                      label={renderCustomizedLabel}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: number, name: string, props: any) => [
+                        `${value} units`, 
+                        props.payload.name
+                      ]}
+                    />
+                    <Legend 
+                      layout="horizontal" 
+                      verticalAlign="bottom" 
+                      align="center"
+                      formatter={(value, entry, index) => pieChartData[index!]?.name?.length > 15 
+                        ? `${pieChartData[index!]?.name?.substring(0, 15)}...` 
+                        : pieChartData[index!]?.name}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center">
+                  <p className="text-muted-foreground">No data available</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
           <div className="bg-white rounded-lg border border-border overflow-hidden">
             <div className="p-4 border-b border-border">
               <h3 className="font-medium">Top Selling Items</h3>
@@ -381,7 +481,7 @@ const AdminAnalytics = () => {
             </Table>
           </div>
           
-          <div className="bg-white rounded-lg border border-border overflow-hidden">
+          <div className="bg-white rounded-lg border border-border overflow-hidden lg:col-span-2">
             <div className="p-4 border-b border-border">
               <h3 className="font-medium">Recent Orders</h3>
             </div>

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, User, LogOut } from 'lucide-react';
+import { ShoppingBag, User, LogOut, Package } from 'lucide-react';
 import { getCurrentUser, logout } from '@/lib/storage';
 import { getCartDetails } from '@/lib/storage';
 
@@ -31,14 +31,20 @@ const Navbar: React.FC = () => {
                   Admin Dashboard
                 </Link>
               ) : (
-                <Link to="/cart" className="relative">
-                  <ShoppingBag className="w-6 h-6 text-foreground" />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Link>
+                <>
+                  <Link to="/my-orders" className="btn-ghost text-sm py-1.5 flex items-center gap-1.5">
+                    <Package className="w-4 h-4" />
+                    <span className="hidden sm:inline">My Orders</span>
+                  </Link>
+                  <Link to="/cart" className="relative">
+                    <ShoppingBag className="w-6 h-6 text-foreground" />
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {cartItemCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
               )}
               <button 
                 onClick={handleLogout}
