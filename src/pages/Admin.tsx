@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Search, Sandwich } from 'lucide-react';
+import { Package, Search, Sandwich, BarChart } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import AdminOrderItem from '@/components/AdminOrderItem';
 import { getAllOrders, getCurrentUser } from '@/lib/storage';
@@ -64,6 +64,13 @@ const Admin = () => {
           </div>
           
           <div className="flex gap-4">
+            <button
+              onClick={() => navigate('/admin/analytics')}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <BarChart className="w-4 h-4" />
+              <span>Analytics</span>
+            </button>
             <button
               onClick={() => navigate('/admin/products')}
               className="btn-secondary flex items-center gap-2"

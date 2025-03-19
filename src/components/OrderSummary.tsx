@@ -5,11 +5,17 @@ interface OrderSummaryProps {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  className?: string;
 }
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ subtotal, deliveryFee, total }) => {
+const OrderSummary: React.FC<OrderSummaryProps> = ({ 
+  subtotal, 
+  deliveryFee, 
+  total, 
+  className = "" 
+}) => {
   return (
-    <div className="rounded-lg border border-border p-4 bg-white animate-fade-in">
+    <div className={`rounded-lg border border-border p-4 bg-white animate-fade-in ${className}`}>
       <h3 className="text-lg font-medium mb-4">Order Summary</h3>
       
       <div className="space-y-2 mb-4">

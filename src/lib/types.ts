@@ -51,3 +51,16 @@ export interface User {
   email: string;
   role: 'admin' | 'customer';
 }
+
+export interface OrderAnalytics {
+  date: string;
+  revenue: number;
+  orderCount: number;
+}
+
+export interface ProductAnalytics {
+  productId: string;
+  name: string;
+  quantity: number;
+  revenue: number;
+}
